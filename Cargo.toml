@@ -1,0 +1,14 @@
+[package]
+name = "securepass"
+version = "0.1.0"
+authors = ["Bartlomiej Sworzen <b.sworzen@gmail.com>"]
+edition = "2021"
+description = "A password generator and balancer library in Rust"
+license = "MIT"
+license-file = "LICENSE"
+documentation = "https://github.com/Sworzen1/securepass/blob/main/README.md"
+homepage = "https://github.com/Sworzen1/securepass"
+repository = "https://github.com/Sworzen1/securepass"
+
+[dependencies]
+rand = "0.8.5"
