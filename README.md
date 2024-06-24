@@ -76,5 +76,3 @@ let mut password = %WEAK_PASSWORD%;
     };
     securepass::balance_password(&mut password, &balance_options);
 ```
-# SecurePass
-# SecurePass
