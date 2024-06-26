@@ -16,7 +16,7 @@ Add this library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-password_generator = "0.2.1"
+password_generator = "0.2.2"
 ```
 
 To generate random password:
