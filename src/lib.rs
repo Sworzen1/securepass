@@ -186,7 +186,7 @@ pub struct PasswordOptions {
 
     fn check_password_in_dictionary(password: &str) -> String {
         let mut password = String::from(password);
-        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/dictionary.txt");
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("dictionary.txt");
         let contents = fs::read_to_string(path).expect("Can not read files.");
         let words: Vec<&str> = contents.lines().collect();
 

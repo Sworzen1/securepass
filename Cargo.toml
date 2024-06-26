@@ -1,6 +1,6 @@
 [package]
 name = "securepass"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Bartlomiej Sworzen <b.sworzen@gmail.com>"]
 edition = "2021"
 description = "A password generator and balancer library in Rust"
@@ -8,7 +8,11 @@ license = "MIT"
 documentation = "https://github.com/Sworzen1/securepass/blob/main/README.md"
 homepage = "https://github.com/Sworzen1/securepass"
 repository = "https://github.com/Sworzen1/securepass"
-include = ["dictonary.txt"]
+include = ["src/**/*", "Cargo.toml", "dictonary.txt"]
+
+[lib]
+name = "securepass"
+path = "src/lib.rs"
 
 [dependencies]
 rand = "0.8.5"
