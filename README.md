@@ -16,7 +16,7 @@ Add this library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-password_generator = "0.2.3"
+password_generator = "0.2.4"
 ```
 
 To get default options:
@@ -71,7 +71,7 @@ let password_strength = securepass::check_password_strength(%PASSWORD%);
 To balance password:
 
 ```rs
-let mut password = %WEAK_PASSWORD%;
+let mut password = %WEAK_PASSWORD%.to_string();
 let balance_options = securepass::PasswordOptions::default();
-let balanced_password = securepass::balance_password(&mut password);
+let balanced_password = balance_options.balance_password(&mut password);
 ```
