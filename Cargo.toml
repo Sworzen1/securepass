@@ -9,7 +9,7 @@ documentation = "https://github.com/Sworzen1/securepass/blob/main/README.md"
 homepage = "https://github.com/Sworzen1/securepass"
 repository = "https://github.com/Sworzen1/securepass"
 include = ["src/**/*", "Cargo.toml", "dictionary.txt"]
-categories = ["crypto", "password", "balancing"]
+categories = ["algorithms", "cryptography", "authentication"]
 
 [lib]
 name = "securepass"
