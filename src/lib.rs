@@ -2,8 +2,13 @@ use rand::{thread_rng, Rng};
 use std::fs;
 use std::path::Path;
 
+pub enum PasswordStrength {
+    Weak,
+    Medium,
+    Strong
+}
 pub struct PasswordOptions {
-    pub length:u32,
+    pub length:usize,
     pub include_special_chars:bool,
     pub include_uppercase:bool,
     pub include_numbers:bool,
@@ -30,71 +35,21 @@ pub struct PasswordOptions {
     }
 
     impl PasswordOptions {
-        pub fn generate_password(&self) -> String {
+        pub fn generate_password(&self) -> Result<String, String> {
             let length = self.length;
             if length < 10 {
-               return String::from("Password length less than 10 is considered weak.")
+               return Err(String::from("Password length less than 10 is considered weak."))
             }
             let charset = self.generate_charset();
     
             let mut password:String = generate_random_password(&charset, length);
     
             if self.phrase.is_none() && self.with_balancing {
-                password = self.balance_password(&mut password);
+                password = balance_password(&mut password);
             }
     
     
-            password
-        }
-    
-        pub fn balance_password(&self, password:&mut String) -> String {
-            let mut password = check_password_in_dictionary(password);
-            let mut rng_thread = thread_rng();
-            let password_length:usize = self.length as usize;
-    
-            if password.len() < password_length {
-                let charset = format!("{}{}{}{}", UPPERCASE_CHARSET, LOWERCASE_CHARSET, NUMBERS, SPECIAL_CHARSET);
-                let num_chars_to_add = (password_length - password.len()) as u32;
-                let str_to_add = generate_random_password(&charset, num_chars_to_add);
-                password.push_str(&str_to_add);
-            }
-
-            loop {
-                let has_lowercase = password.chars().any(|c| c.is_lowercase());
-                let mut has_uppercase = password.chars().any(|c| c.is_uppercase());
-                let mut has_number = password.chars().any(|c| c.is_digit(10));
-                let mut has_special = password.chars().any(|c| SPECIAL_CHARSET.contains(c));
-        
-                if !self.include_uppercase {
-                    has_uppercase = true;
-                }
-                if !self.include_numbers {
-                    has_number = true;
-                }
-                if !self.include_special_chars {
-                    has_special = true;
-                }
-    
-        
-                if  has_uppercase && has_number && has_special && has_lowercase {
-                    break;
-                }
-    
-                if !has_lowercase  {
-                    replace_char(&mut password, LOWERCASE_CHARSET, &mut rng_thread);
-                }
-                if !has_uppercase && self.include_uppercase {
-                    replace_char(&mut password, UPPERCASE_CHARSET, &mut rng_thread);
-                }
-                if !has_number && self.include_numbers {
-                    replace_char(&mut password, NUMBERS, &mut rng_thread);
-                }
-                if !has_special && self.include_special_chars {
-                    replace_char(&mut password, SPECIAL_CHARSET, &mut rng_thread);
-                }
-            }
-
-            password
+            Ok(password)
         }
 
         fn generate_charset(&self) -> String {
@@ -119,7 +74,7 @@ pub struct PasswordOptions {
         } 
     }
 
-    pub fn generate_random_password(charset: &str, length: u32) -> String {
+    pub fn generate_random_password(charset: &str, length: usize) -> String {
         let mut rng_thread = thread_rng();
         (0..length)
             .map(|_| {
@@ -128,14 +83,55 @@ pub struct PasswordOptions {
             })
             .collect()
     }
+
+    pub fn balance_password(password:&mut String) -> String {
+        let mut password = check_password_in_dictionary(password);
+        let mut rng_thread = thread_rng();
+        let optimal_password_length = 12;
+
+        if password.len() < optimal_password_length {
+            let charset = PasswordOptions::default().generate_charset();
+            let number_chars_to_add = optimal_password_length - password.len();
+            if number_chars_to_add > 0 {
+                let str_to_add = generate_random_password(&charset, number_chars_to_add);
+                password.push_str(&str_to_add);
+            }
+        }
+
+        loop {
+            let has_lowercase = password.chars().any(|c| c.is_lowercase());
+            let has_uppercase = password.chars().any(|c| c.is_uppercase());
+            let has_number = password.chars().any(|c| c.is_digit(10));
+            let has_special = password.chars().any(|c| SPECIAL_CHARSET.contains(c));
+    
+            if  has_uppercase && has_number && has_special && has_lowercase {
+                break;
+            }
+
+            if !has_lowercase  {
+                replace_char(&mut password, LOWERCASE_CHARSET, &mut rng_thread);
+            }
+            if !has_uppercase {
+                replace_char(&mut password, UPPERCASE_CHARSET, &mut rng_thread);
+            }
+            if !has_number {
+                replace_char(&mut password, NUMBERS, &mut rng_thread);
+            }
+            if !has_special {
+                replace_char(&mut password, SPECIAL_CHARSET, &mut rng_thread);
+            }
+        }
+
+        password
+    }
     
     
 
-    pub fn check_password_strength(password:&str) -> &str {
+    pub fn check_password_strength(password:&str) -> PasswordStrength {
         let initial_length = password.len();
         let password = check_password_in_dictionary(password);
 
-        let mut score = 0;
+        let mut score;
         let password_length = password.len();
 
         match password_length {
@@ -167,9 +163,9 @@ pub struct PasswordOptions {
         }
 
         match score {
-            7..8 => "Strong",
-            4..=6 => "Medium",
-            _ => "Weak",
+            7..8 => PasswordStrength::Strong,
+            4..=6 => PasswordStrength::Medium,
+            _ => PasswordStrength::Weak,
         }
     }
 
@@ -209,9 +205,24 @@ mod tests {
     fn test_generate_password_with_default() {
         let options = PasswordOptions::default();
 
-        let password = options.generate_password();
+        let result = options.generate_password();
+        assert!(result.is_ok());
+        let password = result.unwrap();
         assert_eq!(password.len(), 12);
-        assert_eq!(check_password_strength(&password), "Strong");
+
+        assert!(matches!(check_password_strength(&password), PasswordStrength::Strong));
+    }
+
+    #[test]
+    fn test_generate_password_length_too_short() {
+        let options = PasswordOptions {
+            length: 5,
+            ..Default::default()
+        };
+
+        let result = options.generate_password();
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Password length less than 10 is considered weak.");
     }
 
     #[test]
@@ -221,9 +232,10 @@ mod tests {
             ..Default::default()
         };
     
-        let password = options.generate_password();
+        let result = options.generate_password();
+        let password = result.unwrap();
         assert_eq!(password.len(), 15);
-        assert_eq!(check_password_strength(&password), "Strong");
+        assert!(matches!(check_password_strength(&password), PasswordStrength::Strong));
         assert!(password.chars().any(|c| LOWERCASE_CHARSET.contains(c)));
         assert!(password.chars().any(|c| UPPERCASE_CHARSET.contains(c)));
         assert!(password.chars().any(|c| NUMBERS.contains(c)));
@@ -238,24 +250,23 @@ mod tests {
         };
     
         let password = options.generate_password();
-        assert_eq!(password, "aaaaaaaaaaaa");
+        assert_eq!(password.unwrap(), "aaaaaaaaaaaa");
     }
 
     #[test]
     fn test_balance_password() {
-        let options = PasswordOptions::default();
         let mut password = "qwertyuiop".to_string();
-        assert_eq!(check_password_strength(&password), "Weak");
+        assert!(matches!(check_password_strength(&password), PasswordStrength::Weak));
 
-        let balanced = options.balance_password(&mut password);
-        assert_eq!(check_password_strength(&balanced), "Strong");
+        let balanced = balance_password(&mut password);
+        assert!(matches!(check_password_strength(&balanced), PasswordStrength::Strong));
     }
     
     
     #[test]
     fn test_check_password_strength() {
-        assert_eq!(check_password_strength("!QEa4Kta2}wg"), "Strong");
-        assert_eq!(check_password_strength("Medium123!9"), "Medium");
-        assert_eq!(check_password_strength("weakpassword"), "Weak");
+        assert!(matches!(check_password_strength("!QEa4Kta2}wg"), PasswordStrength::Strong));
+        assert!(matches!(check_password_strength("Medium123!9"), PasswordStrength::Medium));
+        assert!(matches!(check_password_strength("weakpassword"), PasswordStrength::Weak));
     }
 }
