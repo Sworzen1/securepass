@@ -1,14 +1,14 @@
 # Password Generator Library in Rust
 
-This Rust library provides functions to generate random passwords, balance password, generate password with customizable options and check password strength level.
+This Rust library provides functions to generate random passwords, balance password, generate password with customizable options and password strength level based on calculation password entropy and check password has common words.
 
 ## Features
 
-- Generate random passwords with specified length and character sets.
+- Generate random passwords with specified length and charset.
 - Option to include uppercase letters, numbers, and special characters.
-- Password strength checking based on character variety and length.
-- Optional phrase-based password generation.
+- Password strength checking based on entropy level and common password dictionary.
 - Balance weak password.
+- Calculate password entropy.
 
 ## Usage
 
@@ -16,7 +16,7 @@ Add this library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-password_generator = "0.2.5"
+password_generator = "0.3.0"
 ```
 
 To get default options:
@@ -30,7 +30,7 @@ Options struct and default:
 
 ```rs
 PasswordOptions {
-    pub length:usize, // 12
+    pub length:usize, // 13
     pub include_special_chars:bool, // true
     pub include_uppercase:bool, // true
     pub include_numbers:bool, // true
@@ -73,4 +73,10 @@ To balance password:
 ```rs
 let mut password = %WEAK_PASSWORD%.to_string();
 let balanced_password = securepass::balance_password(&mut password); // returns String
+```
+
+To calculate password entropy:
+
+```rs
+let entropy = securepass::calculate_entropy(%PASSWORD%); // returns float
 ```
