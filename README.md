@@ -16,7 +16,7 @@ Add this library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-password_generator = "0.3.0"
+password_generator = "0.3.1"
 ```
 
 To get default options:
