@@ -1,11 +1,11 @@
 [package]
 name = "securepass"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Bartlomiej Sworzen <b.sworzen@gmail.com>"]
 edition = "2021"
 description = "A password generator and balancer library in Rust"
 license = "MIT"
-documentation = "https://github.com/Sworzen1/securepass/blob/main/README.md"
+documentation = "https://docs.rs/securepass/latest/securepass/"
 homepage = "https://github.com/Sworzen1/securepass"
 repository = "https://github.com/Sworzen1/securepass"
 include = ["src/**/*", "Cargo.toml", "dictionary.txt"]

@@ -16,7 +16,7 @@ Add this library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-password_generator = "0.3.1"
+password_generator = "0.3.2"
 ```
 
 To get default options:
@@ -80,3 +80,7 @@ To calculate password entropy:
 ```rs
 let entropy = securepass::calculate_entropy(%PASSWORD%); // returns float
 ```
+
+## Documentation
+
+You can find full Rust documentation about securepass [here](https://docs.rs/securepass/latest/securepass/).
