@@ -154,7 +154,7 @@ pub fn balance_password(password: &mut String) -> String {
         }
     }
     loop {
-        let password_str = check_password_strength(password);
+        let password_str = check_password_strength(password).unwrap();
         let password_specification = check_password_specification(password);
 
         if let PasswordStrength::Strong = password_str {
@@ -185,12 +185,15 @@ pub fn balance_password(password: &mut String) -> String {
 /// # Returns
 ///
 /// The password strength as a `PasswordStrength` enum.
-pub fn check_password_strength(password: &str) -> PasswordStrength {
+pub fn check_password_strength(password: &str) -> Result<PasswordStrength, String> {
+    if password.is_empty() {
+        return Err(String::from("Password must contain min 1 char"));
+    }
     let entropy = calculate_entropy(password);
     let mut score = 0;
 
     if entropy < 40.0 {
-        return PasswordStrength::Weak;
+        return Ok(PasswordStrength::Weak);
     }
 
     match entropy {
@@ -207,9 +210,9 @@ pub fn check_password_strength(password: &str) -> PasswordStrength {
     }
 
     match score {
-        2..=3 => PasswordStrength::Strong,
-        1 => PasswordStrength::Medium,
-        _ => PasswordStrength::Weak,
+        2..=3 => Ok(PasswordStrength::Strong),
+        1 => Ok(PasswordStrength::Medium),
+        _ => Ok(PasswordStrength::Weak),
     }
 }
 
@@ -329,7 +332,7 @@ mod tests {
         let password = result.unwrap();
         assert_eq!(password.len(), PasswordOptions::default().length);
 
-        assert!(matches!(check_password_strength(&password), PasswordStrength::Strong));
+        assert!(matches!(check_password_strength(&password).unwrap(), PasswordStrength::Strong));
     }
 
     #[test]
@@ -354,7 +357,7 @@ mod tests {
         let result = options.generate_password();
         let password = result.unwrap();
         assert_eq!(password.len(), 15);
-        assert!(matches!(check_password_strength(&password), PasswordStrength::Strong));
+        assert!(matches!(check_password_strength(&password).unwrap(), PasswordStrength::Strong));
         assert!(password.chars().any(|c| LOWERCASE_CHARSET.contains(c)));
         assert!(password.chars().any(|c| UPPERCASE_CHARSET.contains(c)));
         assert!(password.chars().any(|c| NUMBERS.contains(c)));
@@ -375,16 +378,16 @@ mod tests {
     #[test]
     fn test_balance_password() {
         let mut password = "qwertyuiop".to_string();
-        assert!(matches!(check_password_strength(&password), PasswordStrength::Weak));
+        assert!(matches!(check_password_strength(&password).unwrap(), PasswordStrength::Weak));
 
         let balanced = balance_password(&mut password);
-        assert!(matches!(check_password_strength(&balanced), PasswordStrength::Strong));
+        assert!(matches!(check_password_strength(&balanced).unwrap(), PasswordStrength::Strong));
     }
 
     #[test]
     fn test_check_password_strength() {
-        assert!(matches!(check_password_strength("!QEa4Kta2}wg1"), PasswordStrength::Strong));
-        assert!(matches!(check_password_strength("Medium333!@"), PasswordStrength::Medium));
-        assert!(matches!(check_password_strength("weakpassword"), PasswordStrength::Weak));
+        assert!(matches!(check_password_strength("!QEa4Kta2}wg1").unwrap(), PasswordStrength::Strong));
+        assert!(matches!(check_password_strength("Medium333!@").unwrap(), PasswordStrength::Medium));
+        assert!(matches!(check_password_strength("weakpassword").unwrap(), PasswordStrength::Weak));
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "securepass"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Bartlomiej Sworzen <b.sworzen@gmail.com>"]
 edition = "2021"
 description = "A password generator and balancer library in Rust"

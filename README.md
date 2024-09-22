@@ -16,7 +16,7 @@ Add this library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-password_generator = "0.3.2"
+password_generator = "0.3.3"
 ```
 
 To get default options:
@@ -65,7 +65,7 @@ let password_from_phrase = options.generate_password(); // returns Result<String
 To check password strength:
 
 ```rs
-let password_strength = securepass::check_password_strength(%PASSWORD%); // returns PasswordStrength enum
+let password_strength = securepass::check_password_strength(%PASSWORD%); // returns Result<PasswordStrength, String>
 ```
 
 To balance password:
